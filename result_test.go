@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"github.com/neo4j/neo4j-go-driver/neo4j"
+	"github.com/stretchr/testify/mock"
 )
 
 type user struct {
@@ -71,7 +72,7 @@ func TestResult_ToStruct(t *testing.T) {
 		wantErr   bool
 	}{
 		{
-			name: "Runs successfully unmarshalling into fields that are primitive type",
+			name: "Successfully marshals into fields that are primitive type",
 			fields: fields{
 				Result: result,
 			},

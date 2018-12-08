@@ -2,28 +2,22 @@ package neox
 
 import "github.com/neo4j/neo4j-go-driver/neo4j"
 
-// Driver is a wrapper around the neo4j representation of connection pool(s)
-// to a neo4j server or cluster. It's safe for concurrent use.
-type Driver struct {
-	neo4j.Driver
+// Session is a struct that offers access to the standard
+// neo4j driver, but offers extension methods for running cypher
+// queries and handling neo4j results
+type Session struct {
+	neo4j.Session
 }
 
-func (d *Driver) Sessionx(accessMode neo4j.AccessMode, bookmarks ...string) (*Session, error) {
-	s, err := d.Session(accessMode, bookmarks...)
+// Runx is an extension method that runs the provided cypher
+// query with the respective args and configurers
+// and returns a neox.Result
+func (s *Session) Runx(cypher string, args Args, configurers ...func(*neo4j.TransactionConfig)) (*Result, error) {
+	res, err := s.Run(cypher, args, configurers...)
 	if err != nil {
 		return nil, err
 	}
-
-	return &Session{s}, nil
-}
-
-// NewDriver try to construct an instance of a neox.Driver, returning a non nil error if something
-// went wrong
-func NewDriver(target string, auth neo4j.AuthToken, configurers ...func(*neo4j.Config)) (*Driver, error) {
-	d, err := neo4j.NewDriver(target, auth, configurers...)
-	if err != nil {
-		return nil, err
-	}
-
-	return &Driver{d}, nil
+	return &Result{
+		Result: res,
+	}, nil
 }
