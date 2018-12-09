@@ -2,6 +2,7 @@ package neox
 
 import (
 	"testing"
+	"time"
 
 	"github.com/neo4j/neo4j-go-driver/neo4j"
 	"github.com/stretchr/testify/mock"
@@ -58,7 +59,7 @@ func TestResult_ToStruct(t *testing.T) {
 
 	type fields struct {
 		Result neo4j.Result
-		m      map[string]int
+		m      rcache
 		set    bool
 	}
 	type args struct {
@@ -99,13 +100,32 @@ func TestResult_ToStruct(t *testing.T) {
 	}
 }
 
+func TestToStructSpeed(t *testing.T) {
+	r := &Result{
+		Result: t1mock(),
+	}
+
+	durations := make([]time.Duration, 5)
+
+	for idx := range durations {
+		var u user
+		start := time.Now()
+		r.ToStruct(&u)
+		durations[idx] = time.Since(start)
+	}
+
+	if durations[0] < durations[1] {
+		t.Errorf("Second call to ToStruct was slower than first - cache implementation must be broken.\n1st: %v\n2nd: %v", durations[0], durations[1])
+	}
+}
+
 func BenchmarkResult_ToStruct(b *testing.B) {
 	u := new(user)
 	result := t1mock()
 
 	type fields struct {
 		Result neo4j.Result
-		m      map[string]int
+		m      rcache
 		set    bool
 	}
 	type args struct {
