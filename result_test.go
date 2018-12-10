@@ -176,14 +176,3 @@ func (m *mres) Record() neo4j.Record {
 	record, _ := args.Get(0).(neo4j.Record)
 	return record
 }
-
-// mocked neo4j.Record
-type mrec struct {
-	neo4j.Record
-	mock.Mock
-}
-
-func (m *mrec) Get(key string) (interface{}, bool) {
-	args := m.Called(key)
-	return args.Get(0), args.Bool(1)
-}
