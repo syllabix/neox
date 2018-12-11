@@ -62,7 +62,7 @@ func TestRecord_GetInt(t *testing.T) {
 	t.Parallel()
 	m := new(mrec)
 	m.On("Get", "foo_bar").Return(239, true)
-	m.On("Get", "buzz_baz").Return("notanint", false)
+	m.On("Get", "buzz_baz").Return("notanint", true)
 	m.On("Get", "razz_fuzz").Return(0, false)
 
 	type fields struct {
@@ -170,7 +170,7 @@ func TestRecord_GetString(t *testing.T) {
 	t.Parallel()
 	m := new(mrec)
 	m.On("Get", "foo_bar").Return("noname@fun.net", true)
-	m.On("Get", "buzz_baz").Return(123.12, false)
+	m.On("Get", "buzz_baz").Return(123.12, true)
 	m.On("Get", "razz_fuzz").Return("", false)
 
 	type fields struct {
@@ -278,7 +278,7 @@ func TestRecord_GetFloat(t *testing.T) {
 	t.Parallel()
 	m := new(mrec)
 	m.On("Get", "foo_bar").Return(289.23, true)
-	m.On("Get", "buzz_baz").Return(false, false)
+	m.On("Get", "buzz_baz").Return(false, true)
 	m.On("Get", "razz_fuzz").Return(0, false)
 
 	type fields struct {
@@ -386,7 +386,7 @@ func TestRecord_GetBool(t *testing.T) {
 	t.Parallel()
 	m := new(mrec)
 	m.On("Get", "foo_bar").Return(true, true)
-	m.On("Get", "buzz_baz").Return(123.343, false)
+	m.On("Get", "buzz_baz").Return(123.343, true)
 	m.On("Get", "razz_fuzz").Return(false, false)
 
 	type fields struct {

@@ -41,7 +41,7 @@ func (r *Result) Recordx() *Record {
 // the provided struct. The argument must be a pointer to a struct or an ErrInvalidArg will be returned.
 // ToStruct will cache results of reflecting on the provided destination type to improve performance
 // on every subsequent call for an instance of a Result. That said, using varying struct types through the lifetime
-// of a single result instance should be considered unsafe and will provided unstable results
+// of a single result instance should be considered unsafe and will yield unstable results
 func (r *Result) ToStruct(dest interface{}) error {
 	if r.Err() != nil {
 		return r.Err()

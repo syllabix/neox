@@ -24,11 +24,11 @@ func (r *Record) GetIntAtIndex(index int) (value int, ok bool) {
 func (r *Record) GetInt(key string) (value int, ok bool) {
 	v, ok := r.Get(key)
 	if !ok {
-		return 0, false
+		return
 	}
 	value, ok = v.(int)
 	if !ok {
-		return 0, false
+		return
 	}
 	return
 }
@@ -98,29 +98,6 @@ func (r *Record) GetBool(key string) (value bool, ok bool) {
 	value, ok = v.(bool)
 	if !ok {
 		return false, false
-	}
-	return
-}
-
-// GetRuneAtIndex retrieves the value for the record at the provided index
-// asserting it as a rune, returning the value and boolean indicating
-// whether the type was asserted correctly
-func (r *Record) GetRuneAtIndex(index int) (value rune, ok bool) {
-	value, ok = r.GetByIndex(index).(rune)
-	return
-}
-
-// GetRune attempts to retrieve a rune value for the provided key
-// If the provided key does not exist, or the value is not a rune, the method
-// returns the zero value and false
-func (r *Record) GetRune(key string) (value rune, ok bool) {
-	v, ok := r.Get(key)
-	if !ok {
-		return 0, false
-	}
-	value, ok = v.(rune)
-	if !ok {
-		return 0, false
 	}
 	return
 }
