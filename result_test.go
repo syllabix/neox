@@ -8,11 +8,11 @@ import (
 )
 
 type user struct {
-	Name     string  `neo:"user_name"`
-	Age      uint    `neo:"user_age"`
-	Power    float32 `neo:"user_strength"`
-	IsActive bool    `neo:"is_active"`
-	Avatar   rune    `neo:"avatar_icon"`
+	Name     string  `db:"user_name"`
+	Age      uint    `db:"user_age"`
+	Power    float32 `db:"user_strength"`
+	IsActive bool    `db:"is_active"`
+	Avatar   rune    `db:"avatar_icon"`
 }
 
 var (
@@ -49,12 +49,44 @@ var (
 		result.On("Err").Return(nil)
 		return result
 	}
+
+	t2 = user{
+		Name:     "",
+		Age:      17,
+		Power:    0,
+		IsActive: true,
+		Avatar:   0x1F607,
+	}
+
+	t2mock = func() neo4j.Result {
+		record := new(mrec)
+		record.On("Get", "user_name").Return(0x02f, true)
+		record.On("Get", "user_age").Return(t2.Age, true)
+		record.On("Get", "user_strength").Return(12312, true)
+		record.On("Get", "is_active").Return(t2.IsActive, true)
+		record.On("Get", "avatar_icon").Return(t2.Avatar, true)
+
+		result := new(mres)
+		result.On("Record").Return(record)
+		result.On("Err").Return(nil)
+		return result
+	}
+
+	t2assert = func(u *user) func() (*user, bool) {
+		return func() (*user, bool) {
+			passed := (u.Name == t2.Name &&
+				u.Age == t2.Age &&
+				u.Power == t2.Power &&
+				u.IsActive == t2.IsActive &&
+				u.Avatar == t2.Avatar)
+			return &t2, passed
+		}
+	}
 )
 
 func TestResult_ToStruct(t *testing.T) {
-
 	u := new(user)
-	result := t1mock()
+	u2 := new(user)
 
 	type fields struct {
 		Result neo4j.Result
@@ -74,10 +106,35 @@ func TestResult_ToStruct(t *testing.T) {
 		{
 			name: "Successfully marshals into fields that are primitive type",
 			fields: fields{
-				Result: result,
+				Result: t1mock(),
 			},
 			args:      args{u},
 			assertion: t1assert(u),
+			wantErr:   false,
+		},
+		{
+			name: "Handles case were destination is not a struct",
+			fields: fields{
+				Result: t1mock(),
+			},
+			args:    args{&[]string{"foo", "fun", "fire"}},
+			wantErr: true,
+		},
+		{
+			name: "Handles case were destination is not a pointer",
+			fields: fields{
+				Result: t1mock(),
+			},
+			args:    args{123912},
+			wantErr: true,
+		},
+		{
+			name: "Attempts to map all compatible values skipping those that are not",
+			fields: fields{
+				Result: t2mock(),
+			},
+			args:      args{u2},
+			assertion: t2assert(u2),
 			wantErr:   false,
 		},
 	}
@@ -91,6 +148,11 @@ func TestResult_ToStruct(t *testing.T) {
 			if err := r.ToStruct(tt.args.dest); (err != nil) != tt.wantErr {
 				t.Errorf("Result.ToStruct() error = %v, wantErr %v", err, tt.wantErr)
 			}
+
+			if tt.wantErr {
+				return
+			}
+
 			expected, passed := tt.assertion()
 			if passed == false {
 				t.Errorf("Result.ToStruct() expected = %+v, got %+v", expected, tt.args.dest)
