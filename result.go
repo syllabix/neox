@@ -2,13 +2,12 @@ package neox
 
 import (
 	"errors"
-	"fmt"
 	"reflect"
 
 	"github.com/neo4j/neo4j-go-driver/neo4j"
 )
 
-const neotag = "neo"
+const neotag = "db"
 
 var (
 	// ErrInvalidArg is returned when provided arguments are invalid
@@ -53,14 +52,12 @@ func (r *Result) ToStruct(dest interface{}) error {
 	}
 
 	e := v.Elem()
+	if e.Kind() != reflect.Struct {
+		return ErrInvalidArg
+	}
 
 	if !r.set {
 		r.m = make(rcache, e.NumField())
-
-		if e.Kind() != reflect.Struct {
-			return ErrInvalidArg
-		}
-
 		for i := 0; i < e.NumField(); i++ {
 			fieldType := e.Type().Field(i)
 			r.m[fieldType.Tag.Get(neotag)] = rprops{
@@ -75,25 +72,14 @@ func (r *Result) ToStruct(dest interface{}) error {
 	for name, cache := range r.m {
 		r, ok := record.Get(name)
 		if !ok {
-			return fmt.Errorf("neo4j record does contain a value labeled %s", name)
+			continue
 		}
-		if ok {
-			field := e.Field(cache.index)
 
-			if field.CanSet() {
-				value := reflect.ValueOf(r)
-				if value.Kind() == cache.kind {
-					field.Set(value)
-					continue
-				} else {
-					return fmt.Errorf("cannot set struct field \"%s\" of type %s with record %s of type %s",
-						e.Type().Field(cache.index).Name,
-						e.Type().Field(cache.index).Type.Name(),
-						name,
-						value.Type().Name())
-				}
-			} else {
-				return fmt.Errorf("struct field \"%s\" cannot be set", e.Type().Field(cache.index).Name)
+		field := e.Field(cache.index)
+		if field.CanSet() {
+			value := reflect.ValueOf(r)
+			if value.Kind() == cache.kind {
+				field.Set(value)
 			}
 		}
 	}

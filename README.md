@@ -48,7 +48,19 @@ for result.Next() {
     }
 }
 
-// Or perhaps even better a pointer to the struct
+// Or pass a struct that is using the proper db field tags
+
+//For Example:
+type User struct {
+    Value int `db:"total_value"`
+    Name string `db:"username"`
+    IsActive bool `db:"available"`
+}
+
+// Run a match query using alias's that match the tag names in the target struct
+result, _ := session.Run(`
+    match(n) return n.value as total_value, n.name as username, n.active as available`, nil)
+
 for result.Next() {
     var user User
     err := result.ToStruct(&user)
